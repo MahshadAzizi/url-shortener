@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql.schema import UniqueConstraint
 
 from app.models.base import Base
 
@@ -12,6 +13,13 @@ if TYPE_CHECKING:
 
 class URL(Base):
     __tablename__ = "urls"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "short_code",
+            name="uq_urls_short_code",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
 

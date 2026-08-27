@@ -3,8 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 
-from app.api.dependencies import get_url_service
+from app.api.dependencies import get_url_service, get_visit_service
 from app.services.url_service import URLService
+from app.services.visit_service import VisitService
 
 router = APIRouter()
 
@@ -21,6 +22,10 @@ async def redirect_url(
             URLService,
             Depends(get_url_service),
         ],
+        visit_service: Annotated[
+            VisitService,
+            Depends(get_visit_service),
+        ],
 ) -> RedirectResponse:
     url = await service.get_url_by_short_code(short_code)
 
@@ -30,10 +35,14 @@ async def redirect_url(
             detail="Short URL not found",
         )
 
-    ip_address = request.client.host if request.client else None
+    ip_address = (
+        request.client.host
+        if request.client
+        else None
+    )
 
     background_tasks.add_task(
-        service.record_visit,
+        visit_service.record_visit,
         url.id,
         ip_address,
     )

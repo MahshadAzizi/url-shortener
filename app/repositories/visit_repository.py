@@ -11,6 +11,7 @@ class VisitRepository:
     async def create(self, visit: Visit) -> Visit:
         self._session.add(visit)
         await self._session.flush()
+        
         return visit
 
     async def count_by_url_id(self, url_id: int) -> int:

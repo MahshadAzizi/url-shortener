@@ -1,9 +1,8 @@
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio.session import AsyncSession
 
-from app.core.short_code import generate_short_code
-from app.models.url import URL
-from app.models.visit import Visit
+from app.domain.short_code import generate_short_code
+from app.models import URL
 from app.repositories.url_repository import URLRepository
 from app.repositories.visit_repository import VisitRepository
 
@@ -26,23 +25,24 @@ class URLService:
             original_url: str,
     ) -> URL:
         for _ in range(self.MAX_CREATE_RETRIES):
-            short_code = generate_short_code()
-
             url = URL(
                 original_url=original_url,
-                short_code=short_code,
+                short_code=generate_short_code(),
             )
 
             try:
                 async with self._session.begin_nested():
                     await self._url_repository.create(url)
 
-                await self._session.commit()
+            except IntegrityError as exc:
+                if not self._is_short_code_collision(exc):
+                    raise
 
-                return url
-
-            except IntegrityError:
                 continue
+
+            await self._session.commit()
+
+            return url
 
         raise RuntimeError(
             "Failed to generate a unique short code"
@@ -56,24 +56,11 @@ class URLService:
             short_code,
         )
 
-    async def record_visit(
-            self,
-            url_id: int,
-            ip_address: str | None,
-    ) -> None:
-        visit = Visit(
-            url_id=url_id,
-            ip_address=ip_address,
-        )
-
-        await self._visit_repository.create(visit)
-
-        await self._session.commit()
-
-    async def get_visit_count(
-            self,
-            url_id: int,
-    ) -> int:
-        return await self._visit_repository.count_by_url_id(
-            url_id,
+    @staticmethod
+    def _is_short_code_collision(
+            exc: IntegrityError,
+    ) -> bool:
+        return (
+                getattr(exc.orig, "constraint_name", None)
+                == "uq_urls_short_code"
         )
