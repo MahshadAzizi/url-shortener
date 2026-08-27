@@ -1,19 +1,18 @@
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.infrastructure.database.session import (
     get_db_session,
-    session_factory,
+    get_session_factory,
 )
 from app.repositories.url_repository import URLRepository
-from app.repositories.visit_repository import VisitRepository
 from app.services.url_service import URLService
 from app.services.visit_service import VisitService
 
 
-def get_url_service(
+async def get_url_service(
         session: Annotated[
             AsyncSession,
             Depends(get_db_session),
@@ -22,11 +21,20 @@ def get_url_service(
     return URLService(
         session=session,
         url_repository=URLRepository(session),
-        visit_repository=VisitRepository(session),
     )
 
 
-def get_visit_service() -> VisitService:
+async def get_visit_service(
+        session: Annotated[
+            AsyncSession,
+            Depends(get_db_session),
+        ],
+        session_factory: Annotated[
+            async_sessionmaker[AsyncSession],
+            Depends(get_session_factory),
+        ],
+) -> VisitService:
     return VisitService(
+        session=session,
         session_factory=session_factory,
     )

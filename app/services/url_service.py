@@ -1,10 +1,9 @@
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio.session import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.short_code import generate_short_code
 from app.models import URL
 from app.repositories.url_repository import URLRepository
-from app.repositories.visit_repository import VisitRepository
 
 
 class URLService:
@@ -14,11 +13,9 @@ class URLService:
             self,
             session: AsyncSession,
             url_repository: URLRepository,
-            visit_repository: VisitRepository,
     ) -> None:
         self._session = session
         self._url_repository = url_repository
-        self._visit_repository = visit_repository
 
     async def create_short_url(
             self,
@@ -61,6 +58,7 @@ class URLService:
             exc: IntegrityError,
     ) -> bool:
         return (
-                getattr(exc.orig, "constraint_name", None)
+                getattr(exc.orig, "sqlstate", None) == "23505"
+                and getattr(exc.orig, "constraint_name", None)
                 == "uq_urls_short_code"
         )

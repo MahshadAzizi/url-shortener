@@ -2,9 +2,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from app.api.dependencies import get_url_service
+from app.api.dependencies import get_url_service, get_visit_service
 from app.schemas.url import ShortenRequest, ShortenResponse, StatsResponse
 from app.services.url_service import URLService
+from app.services.visit_service import VisitService
 
 router = APIRouter()
 
@@ -47,12 +48,18 @@ async def shorten_url(
 )
 async def get_stats(
         short_code: str,
-        service: Annotated[
+        url_service: Annotated[
             URLService,
             Depends(get_url_service),
         ],
+        visit_service: Annotated[
+            VisitService,
+            Depends(get_visit_service),
+        ],
 ) -> StatsResponse:
-    url = await service.get_url_by_short_code(short_code)
+    url = await url_service.get_url_by_short_code(
+        short_code,
+    )
 
     if url is None:
         raise HTTPException(
@@ -60,7 +67,9 @@ async def get_stats(
             detail="Short URL not found",
         )
 
-    visits = await service.get_visit_count(url.id)
+    visits = await visit_service.get_visit_count(
+        url.id,
+    )
 
     return StatsResponse(
         short_code=url.short_code,
