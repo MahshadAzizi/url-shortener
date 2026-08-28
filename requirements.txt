@@ -1,0 +1,21 @@
+# Runtime
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+
+# Configuration
+pydantic-settings==2.15.0
+
+# Database
+sqlalchemy==2.0.52
+psycopg[binary]==3.3.4
+asyncpg==0.31.0
+greenlet==3.5.5
+# Migrations
+alembic==1.19.1
+
+# Dependency Injection
+dependency-injector==4.49.1
+
+# Testing
+pytest==8.4.2
+httpx==0.28.1

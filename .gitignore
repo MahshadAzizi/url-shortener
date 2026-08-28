@@ -1,0 +1,26 @@
+# Byte-code files
+*.pyc
+__pycache__/
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# Environment variables
+.env
+*.env
+.env.development
+.env.testing
+.env.production
+
+
+# Log files
+*.log
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
