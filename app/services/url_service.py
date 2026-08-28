@@ -1,12 +1,15 @@
+import secrets
+import string
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.short_code import generate_short_code
 from app.models import URL
 from app.repositories.url_repository import URLRepository
 
 
 class URLService:
+    SHORT_CODE_LENGTH = 8
     MAX_CREATE_RETRIES = 3
 
     def __init__(
@@ -24,7 +27,7 @@ class URLService:
         for _ in range(self.MAX_CREATE_RETRIES):
             url = URL(
                 original_url=original_url,
-                short_code=generate_short_code(),
+                short_code=self._generate_short_code(),
             )
 
             try:
@@ -51,6 +54,15 @@ class URLService:
     ) -> URL | None:
         return await self._url_repository.get_by_short_code(
             short_code,
+        )
+
+    @staticmethod
+    def _generate_short_code() -> str:
+        alphabet = string.ascii_letters + string.digits
+
+        return "".join(
+            secrets.choice(alphabet)
+            for _ in range(URLService.SHORT_CODE_LENGTH)
         )
 
     @staticmethod
