@@ -48,5 +48,19 @@ services:
       db:
         condition: service_healthy
 
+  redis:
+    image: redis:8-alpine
+    container_name: url-shortener-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 volumes:
   postgres_data:
+  redis_data:

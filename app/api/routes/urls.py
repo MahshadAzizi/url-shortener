@@ -51,27 +51,19 @@ async def get_stats(
         url_service: Annotated[
             URLService,
             Depends(get_url_service),
-        ],
-        visit_service: Annotated[
-            VisitService,
-            Depends(get_visit_service),
-        ],
+        ]
 ) -> StatsResponse:
-    url = await url_service.get_url_by_short_code(
+    visit_count = await url_service.get_url_with_stats(
         short_code,
     )
 
-    if url is None:
+    if visit_count is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Short URL not found",
         )
 
-    visits = await visit_service.get_visit_count(
-        url.id,
-    )
-
     return StatsResponse(
-        short_code=url.short_code,
-        visits=visits,
+        short_code=short_code,
+        visits=visit_count,
     )

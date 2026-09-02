@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     @property
     def redis_url(self) -> str:
         auth = f':{self.redis_password}@' if self.redis_password else ''
-        return f'redis://{auth}{self.redis_host}:{self.redis_host}/{self.redis_db}'
+        return f'redis://{auth}{self.redis_host}:{self.redis_port}/{self.redis_db}'
 
 
 @lru_cache
