@@ -41,6 +41,18 @@ class Settings(BaseSettings):
             database=self.postgres_db,
         )
 
+    # --- Redis Config ---
+    redis_host: str = Field(default='localhost', description='Redis host')
+    redis_port: int = Field(default=6379, description='Redis port')
+    redis_db: int = Field(default=0, description='Redis database number')
+    redis_password: str | None = Field(default=None, description='Redis password (optional)')
+    redis_pool_size: int = Field(default=50, description='Maximum Redis connection pool size')
+
+    @property
+    def redis_url(self) -> str:
+        auth = f':{self.redis_password}@' if self.redis_password else ''
+        return f'redis://{auth}{self.redis_host}:{self.redis_host}/{self.redis_db}'
+
 
 @lru_cache
 def get_settings() -> Settings:
