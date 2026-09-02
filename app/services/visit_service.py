@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.models.visit import Visit
+from app.repositories.url_repository import URLRepository
 from app.repositories.visit_repository import VisitRepository
 
 
@@ -19,14 +20,11 @@ class VisitService:
             ip_address: str | None,
     ) -> None:
         async with self._session_factory() as session:
-            repository = VisitRepository(session)
+            visit_repo = VisitRepository(session)
+            url_repo = URLRepository(session)
 
-            visit = Visit(
-                url_id=url_id,
-                ip_address=ip_address,
-            )
-
-            await repository.create(visit)
+            await visit_repo.create(Visit(url_id=url_id, ip_address=ip_address))
+            await url_repo.increment_visit_count(url_id)
 
             await session.commit()
 

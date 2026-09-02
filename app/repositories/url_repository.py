@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.url import URL
@@ -27,3 +27,11 @@ class URLRepository:
         await self._session.flush()
 
         return url
+
+    async def increment_visit_count(self, url_id: int) -> None:
+        stmt = (
+            update(URL)
+            .where(URL.id == url_id)
+            .values(visit_count=URL.visit_count + 1)
+        )
+        await self._session.execute(stmt)
