@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, String, func
+from sqlalchemy import DateTime, String, func, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 
@@ -32,6 +32,10 @@ class URL(Base):
         String(8),
         nullable=False,
         unique=True,
+    )
+
+    visit_count: Mapped[int] = mapped_column(
+        BigInteger, nullable=False, server_default="0"
     )
 
     created_at: Mapped[datetime] = mapped_column(
